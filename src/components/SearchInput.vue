@@ -7,8 +7,7 @@
 
 <div class="input-group mb-3">
   <input type="text" class="form-control" id="search" v-model="searchTerm">
-  <!-- <button class="btn btn-outline-secondary" type="button" id="button-addon2">Button</button> -->
-
+  <!-- <button class="btn btn-outline-secondary" type="button" id="search">Go</button> -->
  </div>
 
  <div v-if="searchTerm.length > 0">         

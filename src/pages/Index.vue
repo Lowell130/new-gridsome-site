@@ -1,15 +1,14 @@
 <template>
   <Layout>
     <main>
-      <div class="container-fluid pt-4" style="color:#ddd;">
+      <div class="container-fluid pt-4" style="color: #ddd">
         <div class="text-center">
-          
-          <i style="font-size:4rem;" class="fas fa-search mb-1"></i>
-          <p style="font-size: 2rem; font-weight: 700;">{{ searchText }}</p>
-          </div>
-        <search-input />  
+          <i style="font-size: 4rem" class="fas fa-search mb-1"></i>
+          <p style="font-size: 2rem; font-weight: 700">{{ searchText }}</p>
+        </div>
+        <search-input />
       </div>
-       
+
       <div
         v-b-modal.modal-1
         v-if="bookItem.length !== 0"
@@ -17,9 +16,7 @@
       >
         {{ bookItem.length }}
       </div>
-   
- 
-   
+
       <div
         class="container-fluid bg-trasparent my-4 p-3"
         style="position: relative"
@@ -29,7 +26,7 @@
         >
           <div
             class="col hp"
-            v-for="{ node: product } in products"
+            v-for="{ node: product } in $page.allProduct.edges"
             :key="product.id"
           >
             <div class="card h-100 shadow-sm">
@@ -76,9 +73,11 @@
 
                 <div class="d-grid gap-2 my-4">
                   <!-- <div class="text-center "> -->
-                  <a :href="product.affiliateLink" class="btn btn-warning bold-btn">{{
-                    indexOffer
-                  }}</a>
+                  <a
+                    :href="product.affiliateLink"
+                    class="btn btn-warning bold-btn"
+                    >{{ indexOffer }}</a
+                  >
                   <!-- </div> -->
                 </div>
                 <div class="clearfix mb-1">
@@ -94,7 +93,7 @@
                       class="far fa-heart"
                       style="cursor: pointer"
                     ></i>
-                   
+
                     <i
                       v-if="bookItem.indexOf(product) !== -1"
                       class="fas fa-heart"
@@ -162,7 +161,8 @@
                         <span class="float-end"
                           ><a
                             :href="product.affiliateLink"
-                            class="btn btn-success btn-sm" style="margin-right:10px;"
+                            class="btn btn-success btn-sm"
+                            style="margin-right: 10px"
                             tabindex="-1"
                             role="button"
                             aria-disabled="true"
@@ -190,16 +190,203 @@
         </div>
       </div>
 
-      <ClientOnly>
+      <!-- <ClientOnly> INFINITE SCROLLING PAGER
         <infinite-loading @infinite="loadingProductsHandler"></infinite-loading>
-      </ClientOnly>
+      </ClientOnly> -->
+
+      <div class="container mb-4 pb-4">
+        <Pager
+          :info="$page.allProduct.pageInfo"
+          linkClass="pager__link"
+          showNavigation="false"
+          showLinks="false"
+          class="pager"
+        />
+      </div>
     </main>
 
     <!-- SINGLE PRODUCTS -->
   </Layout>
 </template>
 
-<style scoped>
+
+
+
+
+<script>
+// import InfiniteLoading from "vue-infinite-loading"; INFINITE SCROLL PLUGIN
+import { Pager } from "gridsome";
+import SearchInput from "../components/SearchInput";
+
+export default {
+  metaInfo: {
+    title: process.env.GRIDSOME_SITE_INDEX_DESC,
+  },
+  components: {
+    // InfiniteLoading,
+    Pager,
+    SearchInput,
+  },
+
+  data() {
+    return {
+      bookItem: [],
+      newBookItem: null,
+
+      //   start infinite scrolling var
+      //   products: [],
+      //   currentPage: 1,
+      //   end  infinite scrolling var
+      searchText: process.env.GRIDSOME_SEARCH_TEXT,
+      indexValue: process.env.GRIDSOME_INDEX_VALUE,
+      indexOffer: process.env.GRIDSOME_INDEX_OFFER_BUTTON,
+      indexInfo: process.env.GRIDSOME_INDEX_MORE_INFO,
+      indexReviews: process.env.GRIDSOME_INDEX_REVIEWS,
+      associate: process.env.GRIDSOME_AMAZON_ID,
+      modalPre: process.env.GRIDSOME_MODAL_TEXT_PRE,
+      modalAfter: process.env.GRIDSOME_MODAL_TEXT_AFTER,
+    };
+  },
+
+  //   INFINITE SCROLL
+  //   created() {
+  //     this.products.push(...this.$page.allProduct.edges);
+  //   },
+  //   INFINITE SCROLL
+  mounted() {
+    if (localStorage.getItem("bookItem")) {
+      try {
+        this.bookItem = JSON.parse(localStorage.getItem("bookItem"));
+      } catch (e) {
+        localStorage.removeItem("bookItem");
+      }
+    }
+  },
+
+  methods: {
+    addToCart(item) {
+      if (this.bookItem.indexOf(item) === -1) {
+        this.bookItem.push(item);
+      } else if (this.bookItem.indexOf(item) !== -1) {
+        this.bookItem.splice(this.bookItem.indexOf(item), 1);
+      }
+      this.newBookItem = "";
+      this.saveBook();
+    },
+    saveBook() {
+      const parsed = JSON.stringify(this.bookItem);
+      localStorage.setItem("bookItem", parsed);
+    },
+
+    removeToCart(item) {
+      this.bookItem.splice(this.bookItem.indexOf(item), 1);
+      this.saveBook();
+    },
+
+    getSrc(images) {
+      const { uRL } = images;
+      return images.uRL[1] || images.uRL[0];
+    },
+
+    // INFINITE SCROLL
+    // async loadingProductsHandler($state) {
+    //   if (this.currentPage > this.$page.allProduct.pageInfo.totalPages) {
+    //     $state.complete();
+    //     return;
+    //   }
+
+    //   const { data } = await this.$fetch(`/${this.currentPage + 1}`);
+
+    //   const { allProduct } = data;
+
+    //   if (allProduct.edges.length) {
+    //     this.currentPage = allProduct.pageInfo.currentPage;
+    //     this.products.push(...allProduct.edges);
+
+    //     $state.loaded();
+
+    //     return;
+    //   }
+
+    //   $state.complete();
+    // },
+    // INFINITE SCROLL
+  },
+  computed: {
+    affiliate: function () {
+      return "&tag=" + process.env.GRIDSOME_AMAZON_ID;
+    },
+    reviewsAmz: function () {
+      return "#customerReviews";
+    },
+    searchResults() {
+      const searchTerm = this.searchTerm;
+      if (searchTerm.length < 3) return [];
+      return this.$search.search({
+        query: searchTerm,
+        limit: 5,
+        suggest: true,
+      });
+    },
+  },
+  watch: {
+    $route(to, from) {
+      this.searchTerm = "";
+    },
+  },
+  filters: {
+    strippedContent: function (string) {
+      return string.replace(/<\/?[^>]+>/gi, " ");
+    },
+  },
+};
+</script>
+
+
+
+
+
+
+
+<style lang="scss" scoped>
+
+.pager {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+
+    &__link {
+      color: var(--link-color);
+      text-align: center;
+      text-decoration: none;
+     padding: .5rem 1rem;
+      margin-right: 5px;
+
+      &:hover:not(.active) {
+        background-color: var(--bg-content-color);
+        border-radius: 5px;
+        color: var(--link-color-hover);
+      }
+    }
+  }
+
+   @media (max-width: 576px) { 
+     .pager {
+   font-size: .9rem;
+   &__link {
+     padding: .3rem .6rem;
+    // margin-right: 1px;
+  }
+ }
+   }
+
+  .active {
+    background-color: var(--bg-content-color);
+    border-radius: 5px;
+    color: var(--link-color-hover);
+  }
+
+
 .modal-price {
   font-size: 0.9rem;
   font-weight: 900;
@@ -248,134 +435,11 @@
 
 
 
-<script>
-import InfiniteLoading from "vue-infinite-loading";
-import SearchInput from "../components/SearchInput";
 
-
-export default {
-  metaInfo: {
-    title: process.env.GRIDSOME_SITE_INDEX_DESC,
-  },
-  components: {
-    InfiniteLoading,
-    SearchInput,
-   
-   
-  },
-  data() {
-    return {
-      bookItem: [],
-      newBookItem: null,
-
-      //    infinite scrolling var
-      products: [],
-      currentPage: 1,
-      //    infinite scrolling var
-      searchText: process.env.GRIDSOME_SEARCH_TEXT,
-      indexValue: process.env.GRIDSOME_INDEX_VALUE,
-      indexOffer: process.env.GRIDSOME_INDEX_OFFER_BUTTON,
-      indexInfo: process.env.GRIDSOME_INDEX_MORE_INFO,
-      indexReviews: process.env.GRIDSOME_INDEX_REVIEWS,
-      associate: process.env.GRIDSOME_AMAZON_ID,
-      modalPre: process.env.GRIDSOME_MODAL_TEXT_PRE,
-      modalAfter: process.env.GRIDSOME_MODAL_TEXT_AFTER,
-    };
-  },
-  created() {
-    this.products.push(...this.$page.allProduct.edges);
-  },
-
-  mounted() {
-    if (localStorage.getItem("bookItem")) {
-      try {
-        this.bookItem = JSON.parse(localStorage.getItem("bookItem"));
-      } catch (e) {
-        localStorage.removeItem("bookItem");
-      }
-    }
-  },
-
-  methods: {
-    addToCart(item) {
-      if (this.bookItem.indexOf(item) === -1) {
-        this.bookItem.push(item);
-      } else if (this.bookItem.indexOf(item) !== -1) {
-        this.bookItem.splice(this.bookItem.indexOf(item), 1);
-      }
-      this.newBookItem = "";
-      this.saveBook();
-    },
-    saveBook() {
-      const parsed = JSON.stringify(this.bookItem);
-      localStorage.setItem("bookItem", parsed);
-    },
-
-    removeToCart(item) {
-      this.bookItem.splice(this.bookItem.indexOf(item), 1);
-      this.saveBook();
-    },
-
-    getSrc(images) {
-      const { uRL } = images;
-      return images.uRL[1] || images.uRL[0];
-    },
-    async loadingProductsHandler($state) {
-      if (this.currentPage > this.$page.allProduct.pageInfo.totalPages) {
-        $state.complete();
-
-        return;
-      }
-
-      const { data } = await this.$fetch(`/${this.currentPage + 1}`);
-
-      const { allProduct } = data;
-
-      if (allProduct.edges.length) {
-        this.currentPage = allProduct.pageInfo.currentPage;
-        this.products.push(...allProduct.edges);
-
-        $state.loaded();
-
-        return;
-      }
-
-      $state.complete();
-    },
-  },
-  computed: {
-    affiliate: function () {
-      return "&tag=" + process.env.GRIDSOME_AMAZON_ID;
-    },
-    reviewsAmz: function () {
-      return "#customerReviews";
-    },
-     searchResults() {
-      const searchTerm = this.searchTerm;
-      if (searchTerm.length < 3) return [];
-      return this.$search.search({
-        query: searchTerm,
-        limit: 5,
-        suggest: true,
-      });
-    },
-  },
-  watch: {
-    $route(to, from) {
-      this.searchTerm = "";
-    },
-  },
-  filters: {
-    strippedContent: function (string) {
-      return string.replace(/<\/?[^>]+>/gi, " ");
-    },
-  },
-};
-</script>
 
 <page-query>
 query AllProducts ($page: Int) {
-  allProduct (sortBy: "brand", order: ASC, perPage: 11, page: $page) @paginate {
+  allProduct (sortBy: "brand", order: ASC, perPage: 16, page: $page) @paginate {
     pageInfo {
       totalPages
       currentPage

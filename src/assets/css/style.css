@@ -16,6 +16,10 @@
 
     --label-index: #960796;
     --danger-index: #5bc257;
+/* PAGINATE */
+    --link-color: #000;
+    --link-color-hover: #fff;
+    --bg-content-color: #ffcc00;
 
 }
 
