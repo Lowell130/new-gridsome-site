@@ -20,9 +20,7 @@ module.exports = function (api) {
       const { uRL } = product.images      
       product.images.uRL = Array.isArray(uRL) ? uRL : [uRL]
       product.price = product.price == 0 ? '0,0' : product.price
-      product.listPrice = product.listPrice == 0 ? '0,0' : product.listPrice
-     
-      
+      product.listPrice = product.listPrice == 0 ? '0,0' : product.listPrice     
       productsCollection.addNode(product)
     }
     
