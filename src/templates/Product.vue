@@ -53,9 +53,9 @@
                 </div>
               </div>
               <div class="col-lg-8">
-                <h2 class="text-break my-4 my-lg-1">
+                <h1 class="text-break my-4 my-lg-1">
                   {{ $page.product.title }}
-                </h2>
+                </h1>
 
                 <div class="container-fluid px-0">
                   <div class="d-grid gap-2 my-4">
@@ -96,7 +96,7 @@
       
       
       <div class="container-fluid">
-                <h3 class="pb-3 text-break">{{ onSale }}: {{ $page.product.title }}</h3>
+                <h2 class="pb-3 text-break">{{ onSale }}: {{ $page.product.title }}</h2>
 
         <p class="mt-2" v-if="$page.product.description != 0">
           <strong>{{ desc}}:</strong>
